@@ -9,10 +9,10 @@
 
 class VulkanApi {
 private:
-
-    const std::vector<std::string> defaultValidationLayers = {
+    std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
+    std::vector<const char*> enabledExtensions;
 
     VkApplicationInfo vkApplicationInfo;
     VkInstanceCreateInfo vkInstanceCreateInfo;
@@ -30,31 +30,34 @@ private:
         return appInfo;
     }
 
-    VkInstanceCreateInfo generateVkInstanceInfo(const VkApplicationInfo& appInfo, const std::vector<std::string>& extensionsToEnable, const bool enableValidation) {
-        Logger::logInfo("Extensions to enable:");
-        Logger::logInfo(extensionsToEnable);
-        Logger::logInfo("-----");
-        Logger::logInfo("Validation layers:");
-        Logger::logInfo(defaultValidationLayers);
-
-
+    VkInstanceCreateInfo generateVkInstanceInfo(const bool enableValidation) {
         VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &vkApplicationInfo;
+
+        createInfo.enabledExtensionCount = enabledExtensions.size();
+        createInfo.ppEnabledExtensionNames = enabledExtensions.data();
+
         if (enableValidation) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(defaultValidationLayers.size());
-            createInfo.ppEnabledLayerNames = Utility::transformVectorStringToCStyle(defaultValidationLayers).data();
+            createInfo.enabledLayerCount = validationLayers.size();
+            createInfo.ppEnabledLayerNames = validationLayers.data();
         }
         else {
             createInfo.enabledLayerCount = 0;
         }
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.ppEnabledExtensionNames = Utility::transformVectorStringToCStyle(extensionsToEnable).data();
+
+        Logger::logInfo("Extensions to enable:");
+        Logger::logInfo(createInfo.ppEnabledExtensionNames, enabledExtensions.size());
+        Logger::logInfo("-----");
+        Logger::logInfo("Validation layers:");
+        Logger::logInfo(createInfo.ppEnabledLayerNames, validationLayers.size());
 
         return createInfo;
     }
 
-    VkInstance createInstance(const VkInstanceCreateInfo& createInfo) const {
+    VkInstance createInstance() const {
         VkInstance vki;
+
         if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &vki) != VK_SUCCESS) {
             throw std::runtime_error("failed to create instance!");
         }
@@ -73,11 +76,11 @@ private:
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (const auto& layerName : defaultValidationLayers) {
+        for (const auto& layerName : validationLayers) {
             bool layerFound = false;
 
             for (const auto& layerProperties : availableLayers) {
-                if (layerProperties.layerName == layerName) {
+                if (strcmp(layerProperties.layerName, layerName)) {
                     layerFound = true;
                     break;
                 }
@@ -95,14 +98,17 @@ public:
 
     VulkanApi(bool enableValidation)
     {
+        auto reqExt = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
+        auto requiredExtensions = Utility::transformVectorStringToCStyle(reqExt);
+        enabledExtensions.insert(enabledExtensions.begin(), requiredExtensions.begin(), requiredExtensions.end());
+
         if (enableValidation && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
         vkApplicationInfo = generateVkInstance();
-        auto extensions = generateExtensionsToEnableList();
-        vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, enableValidation);
-        vkInstance = createInstance(vkInstanceCreateInfo);
+        vkInstanceCreateInfo = generateVkInstanceInfo(enableValidation);
+        vkInstance = createInstance();
     }
 
     ~VulkanApi() {
