@@ -33,7 +33,7 @@
     <ClCompile Include="debugCallbacks.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanDebug.cpp">
+    <ClCompile Include="VulkanDebug.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

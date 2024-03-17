@@ -141,7 +141,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utility.h" />
     <ClCompile Include="VulkanApi.h" />
-    <ClCompile Include="VulkanDebug.cpp" />
+    <ClCompile Include="VulkanDebug.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,7 +1,8 @@
-#pragma once
-
 #include <vulkan/vulkan_core.h>
 #include "debugCallbacks.h"
+
+#pragma once
+
 class VulkanDebug
 {
 private:
@@ -34,11 +35,11 @@ private:
         }
     }
 
+
 public:
     VulkanDebug(VkInstance vulkanInstance)
     {
         referencedInstance = vulkanInstance;
-        VkDebugUtilsMessengerCreateInfoEXT createInfo;        
 
         auto createInfo = createDebugMessengerCreateInfo();
 
@@ -47,7 +48,7 @@ public:
         }
     }
 
-    ~VulkanDebug() {
-        DestroyDebugUtilsMessengerEXT(referencedInstance, debugMessenger, nullptr);
+    void DestroyDebugUtils(VkInstance instance) {
+        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }
 };

@@ -5,6 +5,7 @@
 #include "Utility.h"
 #include "Logger.h"
 #include "debugCallbacks.h"
+#include "VulkanDebug.h"
 
 #pragma once
 
@@ -13,6 +14,7 @@ class VulkanApi
 private:
 
     VkInstance vkInstance; 
+    std::unique_ptr<VulkanDebug> vulkanDebug;
 
     static VkApplicationInfo generateVkInstance() 
     {
@@ -128,9 +130,11 @@ public:
         auto vkApplicationInfo = generateVkInstance();
         auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, true);
         vkInstance = createInstance(vkInstanceCreateInfo);
+        vulkanDebug = std::make_unique<VulkanDebug>(vkInstance);
     }
 
     ~VulkanApi() {
+        vulkanDebug->DestroyDebugUtils(vkInstance);
         vkDestroyInstance(vkInstance, nullptr);
     }
 };

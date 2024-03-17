@@ -2,6 +2,8 @@
 #include <vulkan/vulkan_core.h>
 #include <iostream>
 
+#pragma once
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
