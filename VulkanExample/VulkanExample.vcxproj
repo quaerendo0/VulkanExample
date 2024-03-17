@@ -135,7 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="debugCallbacks.h" />
     <ClCompile Include="GlfwVulkanIntegrationApi.h" />
     <ClCompile Include="Logger.h" />
     <ClCompile Include="main.cpp" />

@@ -4,7 +4,6 @@
 #include "GlfwVulkanIntegrationApi.h"
 #include "Utility.h"
 #include "Logger.h"
-#include "debugCallbacks.h"
 #include "VulkanDebug.h"
 
 #pragma once
@@ -14,7 +13,7 @@ class VulkanApi
 private:
 
     VkInstance vkInstance; 
-    std::unique_ptr<VulkanDebug> vulkanDebug;
+    std::unique_ptr<VulkanDebug> vkDebug;
 
     static VkApplicationInfo generateVkInstance() 
     {
@@ -32,7 +31,8 @@ private:
     VkInstanceCreateInfo generateVkInstanceInfo(
         const VkApplicationInfo& appInfo, 
         const std::vector<const char*>& enabledExtensions, 
-        const std::vector<const char*>& validationLayers, 
+        const std::vector<const char*>& validationLayers,
+        VkDebugUtilsMessengerCreateInfoEXT* debugCreateInfo,
         const bool enableValidation) 
     {
         VkInstanceCreateInfo createInfo{};
@@ -45,9 +45,11 @@ private:
         if (enableValidation) {
             createInfo.enabledLayerCount = validationLayers.size();
             createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.pNext = debugCreateInfo;
         }
         else {
             createInfo.enabledLayerCount = 0;
+            createInfo.pNext = nullptr;
         }
 
         Logger::logInfo("Extensions to enable:");
@@ -127,14 +129,16 @@ public:
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
+        auto createDebugInfo = VulkanDebug::GetDebugMessengerCreateInfo();
         auto vkApplicationInfo = generateVkInstance();
-        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, true);
+        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, &createDebugInfo, true);
+
         vkInstance = createInstance(vkInstanceCreateInfo);
-        vulkanDebug = std::make_unique<VulkanDebug>(vkInstance);
+        vkDebug = std::make_unique<VulkanDebug>(vkInstance);
     }
 
     ~VulkanApi() {
-        vulkanDebug->DestroyDebugUtils(vkInstance);
+        vkDebug->DestroyDebugUtils();
         vkDestroyInstance(vkInstance, nullptr);
     }
 };
