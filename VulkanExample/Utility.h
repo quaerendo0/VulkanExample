@@ -6,7 +6,7 @@
 
 class PureCUtility {
 public:
-	static std::unique_ptr<std::vector<const char*>> transformVectorStringToVectorConstChar(const std::vector<std::string>& vs) {
+	static std::unique_ptr<std::vector<const char*>> copyVectorStringToVectorConstChar(const std::vector<std::string>& vs) {
         auto transformed = std::make_unique<std::vector<const char*>>();
 
         transformed->reserve(vs.size());

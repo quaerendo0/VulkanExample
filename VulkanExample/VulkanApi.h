@@ -97,11 +97,11 @@ private:
 
     std::unique_ptr<std::vector<const char*>> getExtensionsToEnable() {
         auto reqExt = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
-        return PureCUtility::transformVectorStringToVectorConstChar(reqExt);
+        return PureCUtility::copyVectorStringToVectorConstChar(reqExt);
     }
 
     std::unique_ptr<std::vector<const char*>> getLayersToEnable() {
-        return PureCUtility::transformVectorStringToVectorConstChar(validationLayers);
+        return PureCUtility::copyVectorStringToVectorConstChar(validationLayers);
     }
 
 public:
