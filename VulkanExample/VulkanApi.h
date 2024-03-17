@@ -9,13 +9,9 @@
 
 class VulkanApi {
 private:
-    std::vector<const char*> validationLayers = {
+    std::vector<std::string> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
-    std::vector<const char*> enabledExtensions;
-
-    VkApplicationInfo vkApplicationInfo;
-    VkInstanceCreateInfo vkInstanceCreateInfo;
     VkInstance vkInstance;
 
     static VkApplicationInfo generateVkInstance() {
@@ -30,10 +26,15 @@ private:
         return appInfo;
     }
 
-    VkInstanceCreateInfo generateVkInstanceInfo(const bool enableValidation) {
+    VkInstanceCreateInfo generateVkInstanceInfo(
+        const VkApplicationInfo& appInfo, 
+        const std::vector<const char*>& enabledExtensions, 
+        const std::vector<const char*>& validationLayers, 
+        const bool enableValidation) 
+    {
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &vkApplicationInfo;
+        createInfo.pApplicationInfo = &appInfo;
 
         createInfo.enabledExtensionCount = enabledExtensions.size();
         createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -55,10 +56,10 @@ private:
         return createInfo;
     }
 
-    VkInstance createInstance() const {
+    VkInstance createInstance(const VkInstanceCreateInfo& createInfo) const {
         VkInstance vki;
 
-        if (vkCreateInstance(&vkInstanceCreateInfo, nullptr, &vki) != VK_SUCCESS) {
+        if (vkCreateInstance(&createInfo, nullptr, &vki) != VK_SUCCESS) {
             throw std::runtime_error("failed to create instance!");
         }
         return vki;
@@ -80,7 +81,7 @@ private:
             bool layerFound = false;
 
             for (const auto& layerProperties : availableLayers) {
-                if (strcmp(layerProperties.layerName, layerName)) {
+                if (layerProperties.layerName == layerName) {
                     layerFound = true;
                     break;
                 }
@@ -94,21 +95,29 @@ private:
         return true;
     }
 
+    std::unique_ptr<std::vector<const char*>> getExtensionsToEnable() {
+        auto reqExt = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
+        return PureCUtility::transformVectorStringToVectorConstChar(reqExt);
+    }
+
+    std::unique_ptr<std::vector<const char*>> getLayersToEnable() {
+        return PureCUtility::transformVectorStringToVectorConstChar(validationLayers);
+    }
+
 public:
 
     VulkanApi(bool enableValidation)
     {
-        auto reqExt = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
-        auto requiredExtensions = Utility::transformVectorStringToCStyle(reqExt);
-        enabledExtensions.insert(enabledExtensions.begin(), requiredExtensions.begin(), requiredExtensions.end());
-
         if (enableValidation && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
-        vkApplicationInfo = generateVkInstance();
-        vkInstanceCreateInfo = generateVkInstanceInfo(enableValidation);
-        vkInstance = createInstance();
+        auto extensions = getExtensionsToEnable();
+        auto layers = getLayersToEnable();
+
+        auto vkApplicationInfo = generateVkInstance();
+        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, *extensions, *layers, true);
+        vkInstance = createInstance(vkInstanceCreateInfo);
     }
 
     ~VulkanApi() {

@@ -17,7 +17,7 @@ public:
 
         output.reserve(glfwExtensionCount); //ниабязательно, прост чуууууть чуть быстрее ухо будет
 
-        for (int i = 0; i < glfwExtensionCount; ++i)
+        for (uint32_t i = 0; i < glfwExtensionCount; ++i)
             output.push_back(glfwExtensions[i]);
 
         return output;
