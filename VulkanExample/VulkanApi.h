@@ -131,7 +131,7 @@ public:
 
         auto createDebugInfo = VulkanDebug::GetDebugMessengerCreateInfo();
         auto vkApplicationInfo = generateVkInstance();
-        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, &createDebugInfo, true);
+        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, &createDebugInfo, enableValidation);
 
         vkInstance = createInstance(vkInstanceCreateInfo);
         vkDebug = std::make_unique<VulkanDebug>(vkInstance);
