@@ -30,5 +30,11 @@
     <ClCompile Include="Utility.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="debugCallbacks.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanDebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

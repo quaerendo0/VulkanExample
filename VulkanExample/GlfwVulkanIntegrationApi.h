@@ -6,14 +6,14 @@
 
 class GlfwVulkanIntegrationApi {
 public:
-    static std::vector<std::string> getReqiredVulkanExtensionsForGlfw() {
+    static std::vector<const char *> getReqiredVulkanExtensionsForGlfw() {
 
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
 
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-        std::vector<std::string> output;
+        std::vector<const char*> output;
 
         output.reserve(glfwExtensionCount); //ниабязательно, прост чуууууть чуть быстрее ухо будет
 

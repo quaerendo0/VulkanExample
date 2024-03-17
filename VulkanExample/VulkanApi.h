@@ -4,17 +4,18 @@
 #include "GlfwVulkanIntegrationApi.h"
 #include "Utility.h"
 #include "Logger.h"
+#include "debugCallbacks.h"
 
 #pragma once
 
-class VulkanApi {
+class VulkanApi 
+{
 private:
-    std::vector<std::string> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
-    VkInstance vkInstance;
 
-    static VkApplicationInfo generateVkInstance() {
+    VkInstance vkInstance; 
+
+    static VkApplicationInfo generateVkInstance() 
+    {
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Hello Triangle";
@@ -56,7 +57,8 @@ private:
         return createInfo;
     }
 
-    VkInstance createInstance(const VkInstanceCreateInfo& createInfo) const {
+    VkInstance createInstance(const VkInstanceCreateInfo& createInfo) const 
+    {
         VkInstance vki;
 
         if (vkCreateInstance(&createInfo, nullptr, &vki) != VK_SUCCESS) {
@@ -65,12 +67,29 @@ private:
         return vki;
     }
 
-    std::vector<std::string> generateExtensionsToEnableList()
+    std::vector<const char *> getExtensionsToEnable(bool enableValidation)
     {
-        return GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
+        auto exts = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
+
+        if (enableValidation) {
+            exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return exts;
     }
 
-    bool checkValidationLayerSupport() {
+    std::vector<const char*> getLayersToEnable(bool enableValidation)
+    {
+        std::vector<const char*> layers;
+        if (enableValidation) 
+        {
+            layers.push_back("VK_LAYER_KHRONOS_validation");
+        }
+
+        return layers;
+    }
+
+    bool checkValidationLayerSupport(std::vector<const char*> validationLayers) {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -81,7 +100,7 @@ private:
             bool layerFound = false;
 
             for (const auto& layerProperties : availableLayers) {
-                if (layerProperties.layerName == layerName) {
+                if (strcmp(layerProperties.layerName, layerName)) {
                     layerFound = true;
                     break;
                 }
@@ -95,28 +114,19 @@ private:
         return true;
     }
 
-    std::unique_ptr<std::vector<const char*>> getExtensionsToEnable() {
-        auto reqExt = GlfwVulkanIntegrationApi::getReqiredVulkanExtensionsForGlfw();
-        return PureCUtility::copyVectorStringToVectorConstChar(reqExt);
-    }
-
-    std::unique_ptr<std::vector<const char*>> getLayersToEnable() {
-        return PureCUtility::copyVectorStringToVectorConstChar(validationLayers);
-    }
-
 public:
 
     VulkanApi(bool enableValidation)
     {
-        if (enableValidation && !checkValidationLayerSupport()) {
+        auto layers = getLayersToEnable(enableValidation);
+        auto extensions = getExtensionsToEnable(enableValidation);
+
+        if (enableValidation && !checkValidationLayerSupport(layers)) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
-        auto extensions = getExtensionsToEnable();
-        auto layers = getLayersToEnable();
-
         auto vkApplicationInfo = generateVkInstance();
-        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, *extensions, *layers, true);
+        auto vkInstanceCreateInfo = generateVkInstanceInfo(vkApplicationInfo, extensions, layers, true);
         vkInstance = createInstance(vkInstanceCreateInfo);
     }
 

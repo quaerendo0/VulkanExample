@@ -135,11 +135,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="debugCallbacks.h" />
     <ClCompile Include="GlfwVulkanIntegrationApi.h" />
     <ClCompile Include="Logger.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utility.h" />
     <ClCompile Include="VulkanApi.h" />
+    <ClCompile Include="VulkanDebug.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
